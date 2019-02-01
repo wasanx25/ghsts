@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/google/go-github/github"
+	"golang.org/x/oauth2"
 	"gopkg.in/yaml.v2"
 )
 
@@ -28,17 +30,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(setting.Owner)
-	fmt.Println(setting.Repos)
-
-	client := github.NewClient(nil)
-	opt := &github.RepositoryListByOrgOptions{Type: "public"}
-	repos, _, err := client.Repositories.ListByOrg(context.Background(), "github", opt)
-	if err != nil {
-		log.Fatal(err)
+	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		log.Fatal("No github token")
 	}
 
-	for _, r := range repos {
-		fmt.Println(r.GetFullName())
+	ts := oauth2.StaticTokenSource(&oauth2.Token{
+		AccessToken: token,
+	})
+	ctx := context.Background()
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+
+	for _, repo := range setting.Repos {
+		info, _, err := client.Repositories.Get(ctx, setting.Owner, repo)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(info.GetFullName())
 	}
 }
