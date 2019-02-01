@@ -6,11 +6,12 @@ import (
 	"io/ioutil"
 	"log"
 
-	yaml "gopkg.in/yaml.v2"
 	"github.com/google/go-github/github"
+	"gopkg.in/yaml.v2"
 )
 
 type Setting struct {
+	Owner string   `yaml:"owner"`
 	Repos []string `yaml:"repos"`
 }
 
@@ -27,6 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	fmt.Println(setting.Owner)
 	fmt.Println(setting.Repos)
 
 	client := github.NewClient(nil)
