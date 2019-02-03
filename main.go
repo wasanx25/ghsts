@@ -13,8 +13,14 @@ import (
 )
 
 type Setting struct {
-	Owner string   `yaml:"owner"`
-	Repos []string `yaml:"repos"`
+	Owner             string             `json:"owner"`
+	Repos             []string           `json:"repos"`
+	BranchProtections []BranchProtection `json:"branch_protections"`
+}
+
+type BranchProtection struct {
+	Name string `json:"name"`
+	Protection *github.ProtectionRequest `json:"protection_request"`
 }
 
 func main() {
@@ -43,10 +49,12 @@ func main() {
 	client := github.NewClient(tc)
 
 	for _, repo := range setting.Repos {
-		info, _, err := client.Repositories.Get(ctx, setting.Owner, repo)
-		if err != nil {
-			log.Fatal(err)
+		for _, protection := range setting.BranchProtections {
+			pro, _, err := client.Repositories.UpdateBranchProtection(ctx, setting.Owner, repo, protection.Name, protection.Protection)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println(pro)
 		}
-		fmt.Println(info.GetFullName())
 	}
 }
