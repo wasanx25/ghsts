@@ -10,12 +10,13 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
+	"golang.org/x/sync/errgroup"
 )
 
 type Setting struct {
-	Rules []Rule `json:"rules"`
-	Owner string `json:"owner"`
-	Repos []Repo `json:"repos"`
+	Rules []*Rule `json:"rules"`
+	Owner string  `json:"owner"`
+	Repos []*Repo `json:"repos"`
 }
 
 type Rule struct {
@@ -54,21 +55,32 @@ func main() {
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
 
+	eg := errgroup.Group{}
+
 	for _, repo := range setting.Repos {
-		rule := setting.findRule(repo.Rule)
-		pro, _, err := client.Repositories.UpdateBranchProtection(ctx, setting.Owner, repo.Name, rule.BranchName, rule.ProtectionRequest)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(pro)
+		eg.Go(func() error {
+			rule, err := setting.findRule(repo.Rule)
+			if err != nil {
+				return err
+			}
+
+			_, _, err = client.Repositories.UpdateBranchProtection(ctx, setting.Owner, repo.Name, rule.BranchName, rule.ProtectionRequest)
+			return err
+		})
 	}
+
+	if err = eg.Wait(); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Success!")
 }
 
-func (s *Setting) findRule(name string) Rule {
+func (s *Setting) findRule(name string) (*Rule, error) {
 	for _, rule := range s.Rules {
 		if rule.Name == name {
-			return rule
+			return rule, nil
 		}
 	}
-	panic(fmt.Sprintf("it has not Rule(%s)", name))
+	return nil, fmt.Errorf("It has not Rule(%s)", name)
 }
