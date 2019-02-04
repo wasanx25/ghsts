@@ -13,14 +13,20 @@ import (
 )
 
 type Setting struct {
-	Owner             string             `json:"owner"`
-	Repos             []string           `json:"repos"`
-	BranchProtections []BranchProtection `json:"branch_protections"`
+	Rules []Rule `json:"rules"`
+	Owner string `json:"owner"`
+	Repos []Repo `json:"repos"`
 }
 
-type BranchProtection struct {
+type Rule struct {
+	Name              string                    `json:"name"`
+	BranchName        string                    `json:"branch_name"`
+	ProtectionRequest *github.ProtectionRequest `json:"protection_request"`
+}
+
+type Repo struct {
 	Name string `json:"name"`
-	Protection *github.ProtectionRequest `json:"protection_request"`
+	Rule string `json:"rule"`
 }
 
 func main() {
@@ -49,12 +55,20 @@ func main() {
 	client := github.NewClient(tc)
 
 	for _, repo := range setting.Repos {
-		for _, protection := range setting.BranchProtections {
-			pro, _, err := client.Repositories.UpdateBranchProtection(ctx, setting.Owner, repo, protection.Name, protection.Protection)
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println(pro)
+		rule := setting.findRule(repo.Rule)
+		pro, _, err := client.Repositories.UpdateBranchProtection(ctx, setting.Owner, repo.Name, rule.BranchName, rule.ProtectionRequest)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(pro)
+	}
+}
+
+func (s *Setting) findRule(name string) Rule {
+	for _, rule := range s.Rules {
+		if rule.Name == name {
+			return rule
 		}
 	}
+	panic(fmt.Sprintf("it has not Rule(%s)", name))
 }

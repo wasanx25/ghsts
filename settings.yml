@@ -1,9 +1,6 @@
-owner: wasanx25
-repos:
-  - goss
-  - sreq
-branch_protections:
-  - name: "master"
+rules:
+  - name: master_protection
+    branch_name: master
     protection_request:
       required_status_checks:
         strict: true
@@ -19,3 +16,10 @@ branch_protections:
       restrictions:
 #        users: []
 #        teams: []
+
+owner: wasanx25
+repos:
+  - name: goss
+    rule: master_protection
+  - name: sreq
+    rule: master_protection
