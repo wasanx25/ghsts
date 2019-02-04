@@ -7,9 +7,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/ghodss/yaml"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
-	"github.com/ghodss/yaml"
 )
 
 type Setting struct {
