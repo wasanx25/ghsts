@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/google/go-github/github"
+	"github.com/k0kubun/pp"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
 )
@@ -41,6 +43,14 @@ func main() {
 	err = yaml.Unmarshal(buf, &setting)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	dryRun := flag.Bool("dryrun", false, "dry run flag")
+	flag.Parse()
+
+	if *dryRun {
+		pp.Println(setting)
+		os.Exit(0)
 	}
 
 	token := os.Getenv("GITHUB_TOKEN")
