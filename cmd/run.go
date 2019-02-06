@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -32,7 +31,7 @@ type Repo struct {
 	Rule string `json:"rule"`
 }
 
-func run(file string) {
+func run(file string, dryRun bool) {
 	var setting Setting
 
 	buf, err := ioutil.ReadFile(file)
@@ -45,10 +44,7 @@ func run(file string) {
 		log.Fatal(err)
 	}
 
-	dryRun := flag.Bool("dryrun", false, "dry run flag")
-	flag.Parse()
-
-	if *dryRun {
+	if dryRun {
 		pp.Println(setting)
 		os.Exit(0)
 	}
