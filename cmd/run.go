@@ -32,10 +32,10 @@ type Repo struct {
 	Rule string `json:"rule"`
 }
 
-func run() {
+func run(file string) {
 	var setting Setting
 
-	buf, err := ioutil.ReadFile("./settings.yml")
+	buf, err := ioutil.ReadFile(file)
 	if err != nil {
 		log.Fatal(err)
 	}
