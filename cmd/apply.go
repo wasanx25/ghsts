@@ -45,8 +45,8 @@ type Rule struct {
 }
 
 type Repo struct {
-	Name string `json:"name"`
-	Rule string `json:"rule"`
+	Name  string   `json:"name"`
+	Rules []string `json:"rules"`
 }
 
 func applySetting(file string, dryRun bool) {
@@ -83,13 +83,16 @@ func applySetting(file string, dryRun bool) {
 
 	for _, repo := range setting.Repos {
 		eg.Go(func() error {
-			rule, err := setting.findRule(repo.Rule)
-			if err != nil {
+			for _, name := range repo.Rules {
+				rule, err := setting.findRule(name)
+				if err != nil {
+					return err
+				}
+
+				_, _, err = client.Repositories.UpdateBranchProtection(ctx, setting.Owner, repo.Name, rule.BranchName, rule.ProtectionRequest)
 				return err
 			}
-
-			_, _, err = client.Repositories.UpdateBranchProtection(ctx, setting.Owner, repo.Name, rule.BranchName, rule.ProtectionRequest)
-			return err
+			return nil
 		})
 	}
 

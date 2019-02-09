@@ -16,10 +16,30 @@ rules:
       restrictions:
 #        users: []
 #        teams: []
+  - name: develop_protection
+    branch_name: develop
+    protection_request:
+      required_status_checks:
+        strict: false
+        contexts: []
+      enforce_admins: false
+      required_pull_request_reviews:
+        dismiss_stale_reviews: false
+        require_code_owner_reviews: false
+        required_approving_review_count: 1
+        dismissal_restrictions:
+#          users: []
+#          teams: []
+      restrictions:
+#        users: []
+#        teams: []
 
 owner: wasanx25
 repos:
   - name: goss
-    rule: master_protection
+    rules:
+    - master_protection
   - name: sreq
-    rule: master_protection
+    rules:
+    - master_protection
+    - develop_protection
