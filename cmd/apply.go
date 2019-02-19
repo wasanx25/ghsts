@@ -78,7 +78,9 @@ func applySetting(file string, dryRun bool) {
 		eg.Go(func() error {
 			for _, rule := range setting.Rules {
 				_, _, err = client.Repositories.UpdateBranchProtection(ctx, setting.Owner, repo, rule.BranchName, rule.ProtectionRequest)
-				return err
+				if err != nil {
+					return err
+				}
 			}
 			return nil
 		})
