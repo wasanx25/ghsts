@@ -1,6 +1,5 @@
 rules:
-  - name: master_protection
-    branch_name: master
+  - branch_name: master
     protection_request:
       required_status_checks:
         strict: true
@@ -16,8 +15,7 @@ rules:
       restrictions:
 #        users: []
 #        teams: []
-  - name: develop_protection
-    branch_name: develop
+  - branch_name: develop
     protection_request:
       required_status_checks:
         strict: false
@@ -36,10 +34,5 @@ rules:
 
 owner: wasanx25
 repos:
-  - name: goss
-    rules:
-    - master_protection
-  - name: sreq
-    rules:
-    - master_protection
-    - develop_protection
+  - goss
+  - sreq

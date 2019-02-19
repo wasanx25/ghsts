@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -33,20 +32,14 @@ func init() {
 }
 
 type Setting struct {
-	Rules []*Rule `json:"rules"`
-	Owner string  `json:"owner"`
-	Repos []*Repo `json:"repos"`
+	Rules []*Rule  `json:"rules"`
+	Owner string   `json:"owner"`
+	Repos []string `json:"repos"`
 }
 
 type Rule struct {
-	Name              string                    `json:"name"`
 	BranchName        string                    `json:"branch_name"`
 	ProtectionRequest *github.ProtectionRequest `json:"protection_request"`
-}
-
-type Repo struct {
-	Name  string   `json:"name"`
-	Rules []string `json:"rules"`
 }
 
 func applySetting(file string, dryRun bool) {
@@ -83,13 +76,8 @@ func applySetting(file string, dryRun bool) {
 
 	for _, repo := range setting.Repos {
 		eg.Go(func() error {
-			for _, name := range repo.Rules {
-				rule, err := setting.findRule(name)
-				if err != nil {
-					return err
-				}
-
-				_, _, err = client.Repositories.UpdateBranchProtection(ctx, setting.Owner, repo.Name, rule.BranchName, rule.ProtectionRequest)
+			for _, rule := range setting.Rules {
+				_, _, err = client.Repositories.UpdateBranchProtection(ctx, setting.Owner, repo, rule.BranchName, rule.ProtectionRequest)
 				return err
 			}
 			return nil
@@ -101,13 +89,4 @@ func applySetting(file string, dryRun bool) {
 	}
 
 	log.Println("Success!")
-}
-
-func (s *Setting) findRule(name string) (*Rule, error) {
-	for _, rule := range s.Rules {
-		if rule.Name == name {
-			return rule, nil
-		}
-	}
-	return nil, fmt.Errorf("It has not Rule(%s)", name)
 }
